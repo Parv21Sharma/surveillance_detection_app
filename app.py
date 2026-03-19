@@ -24,7 +24,7 @@ def load_model():
 
     model = tf.keras.models.load_model(
         MODEL_PATH,
-        custom_objects={"preprocess_input": preprocess_input},
+        compile=False
         safe_mode=False
     )
     return model
