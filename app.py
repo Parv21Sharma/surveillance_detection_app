@@ -24,7 +24,7 @@ def load_model():
 
     model = tf.keras.models.load_model(
         MODEL_PATH,
-        compile=False
+        compile=False,
         safe_mode=False
     )
     return model
