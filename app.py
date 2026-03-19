@@ -13,20 +13,34 @@ st.set_page_config(page_title="Surveillance Detection System", layout="centered"
 st.title("🔍 Surveillance Detection System")
 st.markdown("Upload an image to analyze the situation (Safe / Danger / Isolated)")
 
-# Model download + load
+# Model path
 MODEL_PATH = "resnet50_model.keras"
 
+# Load model (FIXED VERSION - no Lambda issue)
 @st.cache_resource
 def load_model():
     if not os.path.exists(MODEL_PATH):
         url = "https://drive.google.com/uc?id=1-GjozOJ-D3-8lqZPg8xEVzBeCEP0SI8S"
         gdown.download(url, MODEL_PATH, quiet=False)
 
-    model = tf.keras.models.load_model(
-        MODEL_PATH,
-        compile=False,
-        safe_mode=False
+    # 🔥 Rebuild architecture manually (avoids Lambda issue)
+    base_model = tf.keras.applications.ResNet50(
+        input_shape=(224, 224, 3),
+        include_top=False,
+        weights='imagenet'
     )
+    base_model.trainable = False
+
+    model = tf.keras.Sequential([
+        base_model,
+        tf.keras.layers.GlobalAveragePooling2D(),
+        tf.keras.layers.Dropout(0.3),
+        tf.keras.layers.Dense(3, activation='softmax')
+    ])
+
+    # Load trained weights
+    model.load_weights(MODEL_PATH)
+
     return model
 
 model = load_model()
