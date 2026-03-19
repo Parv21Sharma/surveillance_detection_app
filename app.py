@@ -2,13 +2,9 @@ import streamlit as st
 import tensorflow as tf
 import numpy as np
 from PIL import Image
+from tensorflow.keras.applications.resnet50 import preprocess_input
 import os
 import gdown
-
-# ⚠️ CRITICAL FIX (Keras compatibility)
-os.environ["TF_USE_LEGACY_KERAS"] = "1"
-
-from tensorflow.keras.applications.resnet50 import preprocess_input
 
 # Page config
 st.set_page_config(page_title="Surveillance Detection System", layout="centered")
@@ -17,6 +13,7 @@ st.set_page_config(page_title="Surveillance Detection System", layout="centered"
 st.title("🔍 Surveillance Detection System")
 st.markdown("Upload an image to analyze the situation (Safe / Danger / Isolated)")
 
+# Model path
 MODEL_PATH = "resnet50_model.keras"
 
 @st.cache_resource
@@ -25,11 +22,15 @@ def load_model():
         url = "https://drive.google.com/uc?id=1-GjozOJ-D3-8lqZPg8xEVzBeCEP0SI8S"
         gdown.download(url, MODEL_PATH, quiet=False)
 
+    # 🔥 FORCE OLD TF BEHAVIOR (FIX)
+    import tensorflow.compat.v1 as tf1
+    tf1.disable_eager_execution()
+
     model = tf.keras.models.load_model(
         MODEL_PATH,
-        compile=False,
-        safe_mode=False
+        compile=False
     )
+
     return model
 
 model = load_model()
@@ -57,6 +58,7 @@ if uploaded_file is not None:
     predicted_class = class_names[predicted_index]
     confidence = np.max(predictions) * 100
 
+    # Result display
     st.subheader("🔎 Prediction Result")
 
     if predicted_class == "dangerimages":
@@ -66,6 +68,7 @@ if uploaded_file is not None:
     else:
         st.success(f"✅ Safe Situation ({confidence:.2f}%)")
 
+    # Confidence breakdown
     st.subheader("📊 Confidence Scores")
     for i, class_name in enumerate(class_names):
         st.write(f"{class_name}: {predictions[0][i]*100:.2f}%")
