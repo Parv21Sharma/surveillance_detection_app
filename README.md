@@ -36,10 +36,10 @@ Try the application here: [Surveillance Detection App](https://surveillancedetec
 
 ```text
 surveillance_detection_app/
+└── README.md
 ├── app.py
 ├── requirements.txt
 ├── survillence2(ResNet50).ipynb
-└── README.md
 ```
 
 - `app.py` — Streamlit application and image prediction pipeline.
